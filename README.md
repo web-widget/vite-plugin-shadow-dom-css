@@ -117,14 +117,13 @@ customElements.define('my-element', MyElement);
 
 ### 注意事项
 
-由于 Vite 的限制，不得不使用如下方式：
-
 * CSS 路径之前需要增加 `virtual:style-provider!` 前缀
 * CSS 路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
+* 不支持 CSS 格式之外的文件
 
 ### 通配符
 
-对于 [vite-plugin-style-import](https://github.com/anncwb/vite-plugin-style-import) 这样的插件，为我们提供了按需引入组件 CSS 的方式，我们可以结合 vite-plugin-shadow-dom-css 来管理样式
+[vite-plugin-style-import](https://github.com/anncwb/vite-plugin-style-import) 这样的插件为我们提供了按需引入组件 CSS 的方式，我们可以结合 vite-plugin-shadow-dom-css 来管理样式。
 
 ```js
 // src/main.js
@@ -164,7 +163,3 @@ styleProvider.unmount();
 
 * Vite 和 Webpack 不同，它没有 Loader 这样的概念，这意味着插件之间几乎无法组合使用
 * Vite 的内部插件会自动处理 `.css` 文件，所以 vite-plugin-shadow-dom-css 必须通过奇怪的虚拟路径才能绕开它，否则经过 Vite 的内部插件加工后的 CSS 文件将不可用
-
-## 限制
-
-* 不支持 CSS 格式之外的文件
