@@ -1,46 +1,41 @@
-const contents = Symbol('contents');
-const dependencies = Symbol('dependencies');
-const providers = Symbol('providers');
-const update = Symbol('update');
-
 const StylesProviderCache = window.StylesProviderCache || {
-  [contents]: new Map(),
-  [dependencies]: new Map(),
-  [providers]: new Map()
+  contents: new Map(),
+  dependencies: new Map(),
+  providers: new Map()
 };
 
-const create = (filter, container, name) => () => Array.from(StylesProviderCache[contents].keys())
+const create = (filter, container, name) => () => Array.from(StylesProviderCache.contents.keys())
   .filter(id => filter.test(id))
   .forEach(id => {
     useStyle(id)(container)[name]()
   });
 
 export function setStyle(id, content) {
-  StylesProviderCache[contents].set(id, content);
+  StylesProviderCache.contents.set(id, content);
 
-  if (!StylesProviderCache[dependencies].has(id)) {
-    StylesProviderCache[dependencies].set(id, new Set());
+  if (!StylesProviderCache.dependencies.has(id)) {
+    StylesProviderCache.dependencies.set(id, new Set());
   }
 
-  StylesProviderCache[dependencies].get(id).forEach(provider => {
-    provider[update]();
+  StylesProviderCache.dependencies.get(id).forEach(provider => {
+    provider.update();
   });
 }
 
 export function hasStyle(id) {
-  return StylesProviderCache[contents].has(id);
+  return StylesProviderCache.contents.has(id);
 }
 
 export function deleteStyle(id) {
-  StylesProviderCache[dependencies].get(id)?.forEach(provider => {
+  StylesProviderCache.dependencies.get(id)?.forEach(provider => {
     provider.unmount();
     provider.unload();
   });
-  return StylesProviderCache[contents].delete(id);
+  return StylesProviderCache.contents.delete(id);
 }
 
 export function getStyle(id) {
-  return StylesProviderCache[contents].get(id);
+  return StylesProviderCache.contents.get(id);
 }
 
 export function useQueryStyle(query) {
@@ -53,21 +48,21 @@ export function useQueryStyle(query) {
 }
 
 export function useStyle(id) {
-  if (StylesProviderCache[providers].has(id)) {
-    return StylesProviderCache[providers].get(id);
+  if (StylesProviderCache.providers.has(id)) {
+    return StylesProviderCache.providers.get(id);
   }
 
-  StylesProviderCache[providers].set(id, (container = document.head) => {
+  StylesProviderCache.providers.set(id, (container = document.head) => {
     let style;
     const provider = {
       mount: () => {
         if (container) {
           style = document.createElement('style');
           container.appendChild(style);
-          provider[update]();
+          provider.update();
         }
       },
-      [update]: () => {
+      update: () => {
         if (style) {
           const content = getStyle(id);
 
@@ -87,16 +82,16 @@ export function useStyle(id) {
       unload: () => {
         container = null;
         style = null;
-        StylesProviderCache[dependencies].get(id).delete(provider);
+        StylesProviderCache.dependencies.get(id).delete(provider);
       }
     };
 
-    StylesProviderCache[dependencies].get(id)?.add(provider);
+    StylesProviderCache.dependencies.get(id)?.add(provider);
 
     return provider;
   });
 
-  return StylesProviderCache[providers].get(id);
+  return StylesProviderCache.providers.get(id);
 }
 
 window.StylesProviderCache = StylesProviderCache;
