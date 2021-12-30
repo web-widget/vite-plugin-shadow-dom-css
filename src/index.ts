@@ -165,6 +165,7 @@ export default (options: Options = {}): PluginOption => {
             `if (import.meta.hot) {`,
             `   import.meta.hot.on(${JSON.stringify(updateEventName)}, ({ path, content }) => {`,
             `     if (id === path) {`,
+            `       console.log("[vite] hot updated:", id + ${JSON.stringify(extname)})`,
             `       stylesProvider.set(id, content)`,
             `     }`,
             `   })`,
