@@ -1,0 +1,44 @@
+{
+  "name": "vite-plugin-shadow-dom-css",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "aui",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsc -p . -w --incremental",
+    "build": "rimraf dist && npm run build-bundle && npm run build-runtime && npm run build-types",
+    "build-runtime": "cp -f src/style-provider-runtime.js dist",
+    "build-bundle": "esbuild src/index.ts --bundle --platform=node --target=node12 --external:@babel/* --external:@rollup/* --external:resolve --outfile=dist/index.js",
+    "build-types": "tsc -p . --emitDeclarationOnly --outDir temp && api-extractor run && rimraf temp",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path ."
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-widget/vite-plugin-shadow-dom-css.git"
+  },
+  "bugs": {
+    "url": "https://github.com/web-widget/vite-plugin-shadow-dom-css/issues"
+  },
+  "homepage": "https://github.com/web-widget/vite-plugin-shadow-dom-css#readme",
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.19.3",
+    "@types/node": "^17.0.5",
+    "conventional-changelog": "^3.1.25",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.5.4",
+    "vite": "^2.7.7"
+  },
+  "dependencies": {
+    "@babel/core": "^7.16.5",
+    "@rollup/pluginutils": "^4.1.2",
+    "resolve": "^1.20.0"
+  }
+}
