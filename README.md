@@ -164,3 +164,7 @@ styleProvider.unmount();
 
 * Vite 和 Webpack 不同，它没有 Loader 这样的概念，这意味着插件之间几乎无法组合使用
 * Vite 的内部插件会自动处理 `.css` 文件，所以 vite-plugin-shadow-dom-css 必须通过奇怪的虚拟路径才能绕开它，否则经过 Vite 的内部插件加工后的 CSS 文件将不可用
+
+## 限制
+
+* 不支持 CSS 格式之外的文件
