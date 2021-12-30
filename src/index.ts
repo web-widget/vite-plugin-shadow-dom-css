@@ -31,28 +31,40 @@ function parseLoader(id: string) {
   };
 }
 
+/* minify css */
+function minifyCSS(content: string) {
+  content = content.replace(/\/\*(?:(?!\*\/)[\s\S])*\*\/|[\r\n\t]+/g, "");
+  content = content.replace(/ {2,}/g, " ");
+  content = content.replace(/ ([{:}]) /g, "$1");
+  content = content.replace(/([{:}]) /g, "$1");
+  content = content.replace(/([;,]) /g, "$1");
+  content = content.replace(/ !/g, "!");
+  return content;
+}
+
 export interface Options {
   //include?: string | RegExp | Array<string | RegExp>
   //exclude?: string | RegExp | Array<string | RegExp>
   extname?: string
   packageName?: string
+  minify?: boolean
 }
 
 export default (options: Options = {}): PluginOption => {
   const virtual = 'virtual:';
   const extname = options.extname || '.css';
+  const minify = options.minify === undefined ? process.env.NODE_ENV === 'production' : false;
   const loader = 'style-provider';
   const updateEventName = `${loader}:update`;
-  const prefix = `${virtual}${loader}`;
   const resolvedPrefix = `\0/`;
+  const prefix = `${virtual}${loader}`;
 
-  const runtimeModuleId = `${prefix}!:runtime`;
-  let resolvedRuntimeModuleId: string;
+  const runtimeModuleId = `${loader}!/:runtime`;
+  const resolvedRuntimeModuleId = `${resolvedPrefix}${runtimeModuleId}`;
 
   //const include = options.include || [];
   let command: string;
   let packageName = options.packageName;
-  let base = '/'
   //let filter = createFilter(include, options.exclude)
   let projectRoot = process.cwd()
 
@@ -66,9 +78,8 @@ export default (options: Options = {}): PluginOption => {
       command = env.command;
     },
     configResolved(config) {
-      base = config.base
       projectRoot = config.root
-      resolvedRuntimeModuleId = command === 'serve' ? path.posix.join(base, runtimeModuleId) : runtimeModuleId;
+      //resolvedRuntimeModuleId = command === 'serve' ? path.posix.join(base, runtimeModuleId) : runtimeModuleId;
 
       if (!packageName) {
         try {
@@ -130,54 +141,41 @@ export default (options: Options = {}): PluginOption => {
         //const options = Object.fromEntries(params);
 
         if (params.has('query')) {
-
-          //const d = normalizeDevPath(projectRoot, resource);
-          const filter = `^${resolvedId.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*?')}$`;
-
           return [
-            `import stylesProvider from ${JSON.stringify(resolvedRuntimeModuleId)}`,
-            `const filter = new RegExp(${JSON.stringify(filter)})`,
-            `const create = (container, name) => () => Array.from(stylesProvider.entries())`,
-            `  .filter(([id]) => filter.test(id))`,
-            `  .forEach(([id]) => {`,
-            `    stylesProvider.import(id)(container)[name]()`,
-            `  })`,
-            `export default (container = document.head) => ({`,
-            `  mount: create(container, 'mount'),`,
-            `  unmount: create(container, 'unmount'),`,
-            `  unload: create(container, 'unload')`,
-            `})`
+            `import { useQueryStyle } from ${JSON.stringify(resolvedRuntimeModuleId)}`,
+            `export default useQueryStyle(${JSON.stringify(resolvedId)})`,
           ].join('\n')
         }
 
         const fullFilename = path.join(projectRoot, resource + extname);
-        const code = fs.readFileSync(fullFilename, 'utf-8');
+        const source = fs.readFileSync(fullFilename, 'utf-8');
+        const code = minify ? minifyCSS(source) : source;
         this.addWatchFile(fullFilename);
         watchFiles.add(fullFilename)
 
         if (command === 'serve') {
           return [
-            `import stylesProvider from ${JSON.stringify(resolvedRuntimeModuleId)}`,
+            `import { setStyle, useStyle } from ${JSON.stringify(resolvedRuntimeModuleId)}`,
             `const id = ${JSON.stringify(resolvedId)}`,
             `const css = ${JSON.stringify(code)}`,
-            `stylesProvider.set(id, css)`,
-            `export default stylesProvider.import(id)`,
+            `setStyle(id, css)`,
+            `export default useStyle(id)`,
             `if (import.meta.hot) {`,
             `   import.meta.hot.on(${JSON.stringify(updateEventName)}, ({ path, content }) => {`,
             `     if (id === path) {`,
             `       console.log("[vite] hot updated:", id + ${JSON.stringify(extname)})`,
-            `       stylesProvider.set(id, content)`,
+            `       setStyle(id, content)`,
             `     }`,
             `   })`,
             `}`,
           ].join('\n')
         } else {
           return [
-            `import stylesProvider from ${JSON.stringify(resolvedRuntimeModuleId)}`,
+            `import { setStyle, useStyle } from ${JSON.stringify(resolvedRuntimeModuleId)}`,
             `const id = ${JSON.stringify(resolvedId)}`,
             `const css = ${JSON.stringify(code)}`,
-            `stylesProvider.set(id, css)`,
-            `export default stylesProvider.import(id)`
+            `setStyle(id, css)`,
+            `export default useStyle(id)`
           ].join('\n')
         }
       }

@@ -7,7 +7,7 @@ Vite Shadow DOM CSS 插件。
 
 ## 为什么要使用此插件
 
-当你试图使用 Vite 作为构建工具，来编写和 Web Components 相关的组件的时候，你会发现样式永远无法生效： 
+当你试图使用 Vite 作为构建工具来编写和 Web Components 相关的组件的时候，你会发现样式永远无法生效： 
 
 ```js
 import myStyle from './my-style.css';

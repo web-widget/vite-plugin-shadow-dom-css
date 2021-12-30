@@ -1,99 +1,102 @@
 const contents = Symbol('contents');
 const dependencies = Symbol('dependencies');
 const providers = Symbol('providers');
+const update = Symbol('update');
 
-export class StylesProvider {
-  constructor() {
-    this[contents] = new Map()
-    this[dependencies] = new Map()
-    this[providers] = new Map();
+const StylesProviderCache = window.StylesProviderCache || {
+  [contents]: new Map(),
+  [dependencies]: new Map(),
+  [providers]: new Map()
+};
+
+const create = (filter, container, name) => () => Array.from(StylesProviderCache[contents].keys())
+  .filter(id => filter.test(id))
+  .forEach(id => {
+    useStyle(id)(container)[name]()
+  });
+
+export function setStyle(id, content) {
+  StylesProviderCache[contents].set(id, content);
+
+  if (!StylesProviderCache[dependencies].has(id)) {
+    StylesProviderCache[dependencies].set(id, new Set());
   }
 
-  set(id, content) {
-    this[contents].set(id, content);
+  StylesProviderCache[dependencies].get(id).forEach(provider => {
+    provider[update]();
+  });
+}
 
-    if (!this[dependencies].has(id)) {
-      this[dependencies].set(id, new Set());
-    }
+export function hasStyle(id) {
+  return StylesProviderCache[contents].has(id);
+}
 
-    this[dependencies].get(id).forEach(provider => {
-      provider.mount();
-    });
+export function deleteStyle(id) {
+  StylesProviderCache[dependencies].get(id)?.forEach(provider => {
+    provider.unmount();
+    provider.unload();
+  });
+  return StylesProviderCache[contents].delete(id);
+}
+
+export function getStyle(id) {
+  return StylesProviderCache[contents].get(id);
+}
+
+export function useQueryStyle(query) {
+  const filter = new RegExp(`^${query.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*?')}$`)
+  return container => ({
+    mount: create(filter, container, 'mount'),
+    unmount: create(filter, container, 'unmount'),
+    unload: create(filter, container, 'unload')
+  })
+}
+
+export function useStyle(id) {
+  if (StylesProviderCache[providers].has(id)) {
+    return StylesProviderCache[providers].get(id);
   }
 
-  has(id) {
-    return this[contents].has(id);
-  }
+  StylesProviderCache[providers].set(id, (container = document.head) => {
+    let style;
+    const provider = {
+      mount: () => {
+        if (container) {
+          style = document.createElement('style');
+          container.appendChild(style);
+          provider[update]();
+        }
+      },
+      [update]: () => {
+        if (style) {
+          const content = getStyle(id);
 
-  delete(id) {
-    this[dependencies].get(id)?.forEach(provider => {
-      provider.unmount();
-      provider.unload();
-    });
-    return this[contents].delete(id);
-  }
-
-  entries() {
-    return this[contents].entries();
-  }
-
-  get(id) {
-    return this[contents].get(id);
-  }
-
-  import(id) {
-    if (this[providers].has(id)) {
-      return this[providers].get(id);
-    }
-
-    this[providers].set(id, (container = document.head) => {
-      let style;
-      const provider = {
-        mount: () => {
-          if (!container) {
-            return;
-          }
-
-          if (!this.has(id)) {
+          if (typeof content !== 'string') {
             throw new Error(`Style not found: ${id}`);
           }
 
-          const content = this.get(id);
-
-          if (style) {
-            style.innerHTML = content;
-          } else {
-            style = document.createElement('style');
-            style.innerHTML = content;
-            container.appendChild(style);
-          }
-
-          this[dependencies].get(id)?.add(provider);
-        },
-        unmount: () => {
-          if (container && style) {
-            container.removeChild(style);
-            style = null;
-            this[dependencies].get(id).delete(provider);
-          }
-        },
-        unload: () => {
-          container = null;
+          style.innerHTML = content;
+        }
+      },
+      unmount: () => {
+        if (container && style) {
+          container.removeChild(style);
           style = null;
         }
-      };
+      },
+      unload: () => {
+        container = null;
+        style = null;
+        StylesProviderCache[dependencies].get(id).delete(provider);
+      }
+    };
 
-      return provider;
-    });
+    StylesProviderCache[dependencies].get(id)?.add(provider);
 
-    return this[providers].get(id);
-  }
+    return provider;
+  });
+
+  return StylesProviderCache[providers].get(id);
 }
 
-const stylesProvider = window.stylesProvider || new StylesProvider();
-
-if (!window.stylesProvider) {
-  window.stylesProvider = stylesProvider;
-}
-
-export default stylesProvider;
+window.StylesProviderCache = StylesProviderCache;
