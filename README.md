@@ -102,9 +102,19 @@ export default defineConfig({
 })
 ```
 
+配置插件后，它通过虚拟路径 `virtual:style-provider` 来管理样式。
+
+### 直接引入 CSS
+
+```js
+`virtual:style-provider!${css_path}`
+```
+
+`${css_path}` 是一个不包含 `.css` 后缀名的 CSS 文件路径。
+
 ```js
 // src/main.js
-import myStyle from 'virtual:style-provider!./my-style'; // 删除了 .css 后缀名，避免 Vite 内部插件二次处理
+import myStyle from 'virtual:style-provider!./my-style';
 export class MyElement extends HTMLElement {
   constructor() {
     this.attachShadow({ mode: 'open' });
@@ -115,15 +125,13 @@ export class MyElement extends HTMLElement {
 customElements.define('my-element', MyElement);
 ```
 
-### 注意事项
+### 间接引入 CSS
 
-* CSS 路径之前需要增加 `virtual:style-provider!` 前缀
-* CSS 路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
-* 不支持 CSS 格式之外的文件
+```js
+`virtual:style-provider?query!${rule}`
+```
 
-### 通配符
-
-[vite-plugin-style-import](https://github.com/anncwb/vite-plugin-style-import) 这样的插件为我们提供了按需引入组件 CSS 的方式，我们可以结合 vite-plugin-shadow-dom-css 来管理样式。
+`${rule}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询。
 
 ```js
 // src/main.js
@@ -140,8 +148,13 @@ import 'virtual:style-provider!./button/button-style';
 import 'virtual:style-provider!./dialog/dialog-style'; 
 ```
 
-## API
+### 注意事项
 
+* 通过虚拟路径 `virtual:style-provider` 引入的 CSS 都是同步的
+* 虚拟路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
+* 不支持 CSS 格式之外的文件
+
+## API
 
 ```js
 import myStyle from 'virtual:style-provider!./my-style';
@@ -153,7 +166,6 @@ styleProvider.mount();
 // 卸载样式
 styleProvider.unmount();
 ```
-
 
 ## 为什么这么设计这个插件
 
