@@ -128,10 +128,10 @@ customElements.define('my-element', MyElement);
 ### 间接引入 CSS
 
 ```js
-`virtual:style-provider?query!${rule}`
+`virtual:style-provider?query!${fuzzy_css_path}`
 ```
 
-`${rule}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询**已经被导入**的 CSS。
+`${fuzzy_css_path}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询**已经被导入**的 CSS。
 
 ```js
 // src/main.js
