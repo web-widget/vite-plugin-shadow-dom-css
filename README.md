@@ -150,9 +150,10 @@ import 'virtual:style-provider!./dialog/dialog-style';
 
 ### 注意事项
 
-* 通过虚拟路径引入的 CSS 都是同步的
+* 使用模糊查询的时候需要注意 CSS 导入的顺序，因为虚拟路径引入的 CSS 都是同步注册的
 * 虚拟路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
 * 不支持 CSS 格式之外的文件
+* 尚未支持自动补全 `node_modules` 中的 `.css` 文件（即将推出）
 
 ## API
 
