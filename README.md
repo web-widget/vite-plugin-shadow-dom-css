@@ -131,7 +131,7 @@ customElements.define('my-element', MyElement);
 `virtual:style-provider?query!${rule}`
 ```
 
-`${rule}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询。
+`${rule}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询**已经被导入**的 CSS。
 
 ```js
 // src/main.js
@@ -150,7 +150,7 @@ import 'virtual:style-provider!./dialog/dialog-style';
 
 ### 注意事项
 
-* 通过虚拟路径 `virtual:style-provider` 引入的 CSS 都是同步的
+* 通过虚拟路径引入的 CSS 都是同步的
 * 虚拟路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
 * 不支持 CSS 格式之外的文件
 
