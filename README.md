@@ -43,6 +43,23 @@ customElements.define('my-element', MyElement);
 
 在开发模式中，我们会在 `<head>` 中得到由 Vite 生成的 `<style>`；在生产模式中，我们将得到 .css 文件，这些 .css 文件需要有我们额外通过 `<link>` 标签输出。这两种模式都不能让 CSS 工作在 Shadow DOM 中，因为 Shadow DOM 是一个隔离的样式环境。
 
+使用这个插件你可以让 CSS 按预期插入到 Shadow DOM 中：
+
+```html
+<html>
+  <head></head>
+  <body>
+    <my-element>
+      #shadow-root
+      	<h1>Hello world</h1>
+        <style>
+          /*...*/
+        </style>
+    </my-element>
+  </body>
+</html>
+```
+
 ## 使用
 
 ```js
