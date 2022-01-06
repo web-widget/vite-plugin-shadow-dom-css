@@ -30,6 +30,7 @@
   "homepage": "https://github.com/web-widget/vite-plugin-shadow-dom-css#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.19.3",
+    "@types/estree": "^0.0.50",
     "@types/node": "^17.0.5",
     "conventional-changelog": "^3.1.25",
     "rimraf": "^3.0.2",
@@ -38,7 +39,6 @@
   },
   "dependencies": {
     "@babel/core": "^7.16.5",
-    "@rollup/pluginutils": "^4.1.2",
-    "resolve": "^1.20.0"
+    "@rollup/pluginutils": "^4.1.2"
   }
 }
