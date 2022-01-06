@@ -2,6 +2,8 @@
 
 Vite Shadow DOM CSS 插件。
 
+虽然 Web Components 充满了希望，但如今要在工程中使用它将会面临非非常多的问题，而样式的工程化首当其冲。Vite 与其他流行构建工具并没有很好的解决这样的问题，而开发社区中只有零星的文章讨论到它，所以这个插件是一次解决问题的尝试。
+
 - 能够将 CSS 插入到 Shadow DOM 中
 - 开发环境支持热更新
 
@@ -104,17 +106,11 @@ export default defineConfig({
 
 配置插件后，它通过虚拟路径 `virtual:style-provider` 来管理样式。
 
-### 直接引入 CSS
+### 引入 CSS
 
 ```js
-`virtual:style-provider!${css_path}`
-```
+import myStyle from './my-style.css?style-provider';
 
-`${css_path}` 是一个不包含 `.css` 后缀名的 CSS 文件路径。
-
-```js
-// src/main.js
-import myStyle from 'virtual:style-provider!./my-style';
 export class MyElement extends HTMLElement {
   constructor() {
     this.attachShadow({ mode: 'open' });
@@ -125,54 +121,43 @@ export class MyElement extends HTMLElement {
 customElements.define('my-element', MyElement);
 ```
 
-### 间接引入 CSS
+### 查询 CSS
+
+支持使用虚拟模块 `virtual:style-provider?query=${query}` 查询 CSS：
+
+`${query}` 支持的语法：
+
+* `*`: 通配符
+* `,`: 分割符
+* `~`: 包的根目录
+
+示例：
 
 ```js
-`virtual:style-provider?query!${fuzzy_css_path}`
+// 所有样式
+import allStyle from `virtual:style-provider?query=*`;
+// 当前包下的所有样式
+import packageAllStyle from `virtual:style-provider?query=~/*`;
+// 指定多个样式
+import selectStyle from `virtual:style-provider?query=@ui/dialog/*,@ui/button/*`;
+
+allStyle(document.head).mount();
+packageAllStyle(document.head).mount();
+selectStyle(document.head).mount();
 ```
 
-`${fuzzy_css_path}` 是一个不包含 `.css` 后缀名的 CSS 文件路径，但支持 `*` （匹配文件）与 `**` （匹配路径）来进行模糊查询**已经被导入**的 CSS。
+## 配置
 
-```js
-// src/main.js
-import app from './app';
-import allStyleProvider from 'virtual:style-provider?query!./**';
+* `include`
+* `exclude`
 
-const allStyleProvider = myStyle(document.head);
-allStyleProvider.mount();
+
+## CSS API
+
+```ts
+type StyleProvider = {
+  mount(): void;
+  unmunt(): void;
+  unload(): void
+}
 ```
-
-```js
-// src/app.js
-import 'virtual:style-provider!./button/button-style';
-import 'virtual:style-provider!./dialog/dialog-style'; 
-```
-
-### 注意事项
-
-* 使用模糊查询的时候需要注意 CSS 导入的顺序，因为虚拟路径引入的 CSS 都是同步注册的
-* 虚拟路径不能包含 `.css` 字符，一旦这样会被 Vite 内置 CSS 后处理插件进行加工
-* 不支持 CSS 格式之外的文件
-* 尚未支持自动补全 `node_modules` 中的 `.css` 文件（即将推出）
-
-## API
-
-```js
-import myStyle from 'virtual:style-provider!./my-style';
-
-/* ... */
-const styleProvider = myStyle(shadowRoot);
-// 挂载样式
-styleProvider.mount();
-// 卸载样式
-styleProvider.unmount();
-```
-
-## 为什么这么设计这个插件
-
-虽然 Web Components 充满了希望，但如今要在工程中使用它将会面临非非常多的问题，而样式的工程化首当其冲。Vite 与其他流行构建工具并没有很好的解决这样的问题，而开发社区中只有零星的文章讨论到它，所以这个插件是一次解决问题的尝试。
-
-这个插件实现过程中遇到诸多困难，这也许是 Vite 的插件设计导致的：
-
-* Vite 和 Webpack 不同，它没有 Loader 这样的概念，这意味着插件之间几乎无法组合使用
-* Vite 的内部插件会自动处理 `.css` 文件，所以 vite-plugin-shadow-dom-css 必须通过奇怪的虚拟路径才能绕开它，否则经过 Vite 的内部插件加工后的 CSS 文件将不可用

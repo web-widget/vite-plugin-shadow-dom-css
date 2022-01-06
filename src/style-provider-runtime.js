@@ -39,7 +39,7 @@ export function getStyle(id) {
 }
 
 export function useQueryStyle(query) {
-  const filter = new RegExp(`^${query.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*?')}$`)
+  const filter = new RegExp(`^(${query.replace(/\*+/g, '.*').split(',').join('|')})$`)
   return container => ({
     mount: create(filter, container, 'mount'),
     unmount: create(filter, container, 'unmount'),
@@ -52,12 +52,13 @@ export function useStyle(id) {
     return StylesProviderCache.providers.get(id);
   }
 
-  StylesProviderCache.providers.set(id, (container = document.head) => {
+  StylesProviderCache.providers.set(id, function styleProvider(container = document.head) {
     let style;
     const provider = {
       mount: () => {
         if (container) {
           style = document.createElement('style');
+          style.dataset.id = id;
           container.appendChild(style);
           provider.update();
         }
