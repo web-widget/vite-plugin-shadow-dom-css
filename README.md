@@ -78,7 +78,7 @@ customElements.define('my-element', MyElement);
 
 * `*`: 通配符
 * `,`: 分割符
-* `~`: 包的根目录
+* `~`: 当前包的根目录
 
 示例：
 
