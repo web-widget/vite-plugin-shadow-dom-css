@@ -6,6 +6,7 @@ Vite Shadow DOM CSS 插件。
 
 - 能够将 CSS 插入到 Shadow DOM 中
 - 开发环境支持热更新
+- 可与 Vite 内置的 CSS 插件配合工作
 
 ## Web Components 技术下的 CSS 工程化问题
 
