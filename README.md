@@ -7,7 +7,7 @@ Vite Shadow DOM CSS 插件。
 - 能够将 CSS 插入到 Shadow DOM 中
 - 开发环境支持热更新
 
-## 问题
+## Web Components 技术下的 CSS 工程化问题
 
 当你试图使用 Vite 作为构建工具来编写和 Web Components 相关的组件的时候，你会发现样式永远无法生效： 
 
@@ -100,6 +100,13 @@ selectStyle(document.head).mount();
 * `include`
 * `exclude`
 
+除了在源码中显式的使用 `?style-provider` 来引入样式之外，还可以通过 `include` 配置批量处理：
+
+```js
+shadowDomCss({
+  include: [/\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\?)/]
+})
+```
 
 ## CSS API
 
