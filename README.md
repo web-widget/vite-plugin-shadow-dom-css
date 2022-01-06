@@ -124,13 +124,3 @@ shadowDomCss({
   include: [/\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\?)/]
 })
 ```
-
-## CSS API
-
-```ts
-type StyleProvider = {
-  mount(): void;
-  unmunt(): void;
-  unload(): void
-}
-```
