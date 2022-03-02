@@ -5,7 +5,6 @@ import path from 'path';
 import type { PluginOption } from 'vite';
 
 export interface Options {
-  include?: string | RegExp | Array<string | RegExp>;
   exclude?: string | RegExp | Array<string | RegExp>;
   packageName?: string;
 }
@@ -32,7 +31,7 @@ export default (options: Options = {}): PluginOption[] => {
   let command: string;
   let packageName = options.packageName;
   let projectRoot = process.cwd();
-  let filter = createFilter(options.include/* || [cssLangRE]*/, options.exclude);
+  let filter = createFilter([afterIdRE], options.exclude);
 
   return [
     {
@@ -111,10 +110,9 @@ export default (options: Options = {}): PluginOption[] => {
         // `./style.css?style-provider` -> `\0/style-provider/${encodeData}`
         if (afterIdRE.test(id)) {
           const paramsRE = /^[^\?]*|\?.*$/g;
-          let [filename, query] = id.match(paramsRE) || [''];
-          query = query.replace(afterIdRE, '?').replace(/\?$/, '');
-
-          let normalizePath = `${filename}${query}`;
+          const [filename, query] = id.match(paramsRE) || [''];
+          const normalizeQuery = query.replace(new RegExp(`(\\?|&)${loader}(=[^&]*)?|\\?$`), '');
+          let normalizePath = `${filename}${normalizeQuery}`;
 
           if (isRelativePath(normalizePath)) {
             normalizePath = path.join(
@@ -202,8 +200,8 @@ export default (options: Options = {}): PluginOption[] => {
 
           if (command === 'serve') {
             return [
-              `import { setStyle, useStyle } from ${runtimeIdStringify}`,
               `import css from ${cssIdStringify}`,
+              `import { setStyle, useStyle } from ${runtimeIdStringify}`,
               `const id = ${idStringify}`,
               `setStyle(id, css)`,
               `export default useStyle(id)`,
@@ -219,9 +217,7 @@ export default (options: Options = {}): PluginOption[] => {
           } else {
             return [
               `import css from ${cssIdStringify}`,
-              `import { setStyle, useStyle } from ${JSON.stringify(
-                runtimeId
-              )}`,
+              `import { setStyle, useStyle } from ${runtimeIdStringify}`,
               `const id = ${idStringify}`,
               `setStyle(id, css)`,
               `export default useStyle(id)`,

@@ -61,7 +61,9 @@ customElements.define('my-element', MyElement);
 </html>
 ```
 
-## 使用
+## 基本示例
+
+### 添加插件
 
 ```js
 // vite.config.js
@@ -73,7 +75,9 @@ export default defineConfig({
 })
 ```
 
-### 引入 CSS
+### 引入 CSS 文件
+
+引入 CSS，并且增加查询参数 `style-provider`。
 
 ```js
 import myStyle from './my-style.css?style-provider';
@@ -86,6 +90,26 @@ export class MyElement extends HTMLElement {
   }
 }
 customElements.define('my-element', MyElement);
+```
+
+### 引入 Vue 文件的 Style
+
+在 `.vue` 单文件中，在 `<style>` 上增加 `style-provider` 属性即可。
+
+```html
+<template>
+  <div class="index">
+    <h1>style-provider demo</h1>
+  </div>
+</template>
+
+<script></script>
+
+<style style-provider>
+  .index h1 {
+    font-weight: normal;
+  }
+</style>
 ```
 
 ### 查询 CSS
@@ -113,17 +137,5 @@ packageAllStyle(document.head).mount();
 selectStyle(document.head).mount();
 ```
 
-> 只能查询之前被导入的 CSS，请确 CSS 引入的顺序是正确的。
+> 只能查询之前被导入的 CSS，请确保 CSS 引入的顺序是正确的。
 
-## 配置
-
-* `include`
-* `exclude`
-
-除了在源码中显式的使用 `?style-provider` 来引入样式之外，还可以通过 `include` 配置批量处理：
-
-```js
-shadowDomCss({
-  include: [/\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\?)/]
-})
-```
