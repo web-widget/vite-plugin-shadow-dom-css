@@ -137,5 +137,5 @@ packageAllStyle(document.head).mount();
 selectStyle(document.head).mount();
 ```
 
-> 只能查询之前被导入的 CSS，请确 CSS 引入的顺序是正确的。
+> 只能查询之前被导入的 CSS，请确保 CSS 引入的顺序是正确的。
 

@@ -18,7 +18,7 @@ export default defineConfig({
     outDir,
     lib: {
       entry: path.resolve(cwd, main),
-      formats: ['esm', 'system'],
+      formats: ['es', 'system'],
       fileName: format => `${filename}.${format}.js`,
     }
   },
