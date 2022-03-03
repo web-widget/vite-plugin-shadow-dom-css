@@ -7,13 +7,14 @@
     "dist",
     "src"
   ],
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsc -p . -w --incremental",
     "build": "rimraf dist && npm run build-bundle && npm run build-runtime && npm run build-types",
     "build-runtime": "cp -f src/style-provider-runtime.js dist",
-    "build-bundle": "esbuild src/index.ts --bundle --platform=node --target=node12 --external:@babel/* --external:@rollup/* --external:resolve --outfile=dist/index.js",
+    "build-bundle": "unbuild",
     "build-types": "tsc -p . --emitDeclarationOnly --outDir temp && api-extractor run && rimraf temp",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path ."
   },
@@ -35,6 +36,7 @@
     "conventional-changelog": "^3.1.25",
     "rimraf": "^3.0.2",
     "typescript": "^4.5.4",
+    "unbuild": "^0.6.9",
     "vite": "^2.7.7"
   },
   "dependencies": {
