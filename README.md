@@ -112,7 +112,7 @@ customElements.define('my-element', MyElement);
 </style>
 ```
 
-### 查询 CSS
+### 高级功能：查找间接引用的 CSS
 
 支持使用虚拟模块 `virtual:style-provider?query=${query}` 查询 CSS：
 
